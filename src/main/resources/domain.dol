@@ -1,0 +1,635 @@
+/*******************************************************************************
+ * Copyright 2012-2013 Trento RISE
+ * 
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ * 
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ ******************************************************************************/
+package eu.trentorise.smartcampus.domain.discovertrento;
+
+import it.sayservice.platform.compiler.domain.model.annotations.ServiceNotification;
+import it.sayservice.platform.compiler.domain.model.annotations.Subscription;
+import it.sayservice.platform.compiler.domain.model.annotations.Local;
+import it.sayservice.platform.compiler.domain.model.annotations.Process;
+
+import eu.trentorise.smartcampus.domain.semantic.Tag;
+import eu.trentorise.smartcampus.domain.semantic.SemanticService;
+
+DomainType EventService {
+    port update(data : GenericEvent[]);
+}
+
+DomainType POIService {
+    port update(data : GenericPOI[]);
+}
+
+
+DomainObject PAPService implements EventService {
+    
+    @ServiceNotification(serviceId="eu.trentorise.smartcampus.services.primiallaprima.PrimiallaprimaService", methodName="GetEvents", converter="eu.trentorise.smartcampus.domain.discovertrento.PAPDataConverter")
+    port update(data : GenericEvent[]);
+
+    @Subscription(serviceId="eu.trentorise.smartcampus.services.primiallaprima.PrimiallaprimaService", methodName="GetEvents")
+    operation subscribeEvents();
+    
+    action initialize() {
+        invoke subscribeEvents();        
+    }
+}
+
+DomainObject OperaUniService implements POIService {
+    
+    @ServiceNotification(serviceId="eu.trentorise.smartcampus.services.ou.OperaUniService", methodName="GetLocations", converter="eu.trentorise.smartcampus.domain.discovertrento.OUDataConverter")
+    port update(data : GenericPOI[]);
+
+    @Subscription(serviceId="eu.trentorise.smartcampus.services.ou.OperaUniService", methodName="GetLocations")
+    operation subscribeOULocations();
+    
+    action initialize() {
+        invoke subscribeOULocations();        
+    }
+}
+
+
+DomainObject ServiceEventFactory {
+    private var events : String[];
+
+    port updateEvent(id: String, event: GenericEvent); 
+        
+    action transformEvents(list : GenericEvent[]) {
+        for (e in list) {
+            found : boolean = false;
+            if (events != null) {
+                for (old in events) {
+                    if (old == e.id) {
+                        found = true;
+                        publish updateEvent(e.id, e);
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                create ServiceEventObject(id:e.id, data:e);
+                set events = Helper.merge(events,e.id);
+            }
+        }
+    }
+
+    subscribe EventService!update() => transformEvents(data);
+}
+
+DomainObject ServicePOIFactory {
+    private var locations : String[];
+
+    port updatePOI(id: String, poi: GenericPOI); 
+        
+    action transformLocations(list : GenericPOI[]) {
+        for (l in list) {
+            found : boolean = false;
+            if (locations != null) {
+                for (old in locations) {
+                    if (old == l.id) {
+                        found = true;
+                        publish updatePOI(l.id, l);
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                create ServicePOIObject(id:l.id, data:l);
+                set locations = Helper.merge(locations,l.id);
+            }
+        }
+    }
+
+    subscribe POIService!update() => transformLocations(data);
+}
+
+DomainType BaseDTObject {
+    public immutable var id : String;
+    public var entityId: Long;
+    public var communityData : CommunityData;
+
+    operation rate(user: String, rating: int) returns int;
+    operation updateCommunityData(newCommunityData: CommunityData);
+}
+
+DomainType EventObject implements BaseDTObject {
+    public var data : GenericEvent;
+    public rel poi : POIObject;
+    public var attending : String[];
+    public var attendees : int;
+
+    operation attend(user: String);
+    operation notAttend(user: String);
+}
+
+DomainType ServiceEventObject implements EventObject {
+    public inferred var attendees : int = count(attending);
+    private rel semanticService : SemanticService;
+    public var customData: EventCustomData;
+
+    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
+    operation updateSemanticData(type:String,relations:Long[]);
+    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
+    operation deleteSemanticData();
+
+    @Local(actionName="_attend")
+    operation attend(user: String);
+    
+    @Local(actionName="_notAttend")
+    operation notAttend(user: String);
+    
+    @Local(actionName="_rate")
+    operation rate(user: String, rating: int) returns int;
+    @Local(actionName="_updateCommunityData")
+    operation updateCommunityData(newCommunityData: CommunityData);
+
+    @Local(actionName="_updateCustomData")
+    operation updateCustomData(newCustomData:EventCustomData, newCommunityData: CommunityData);
+
+    action _updateCommunityData(newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+    action _rate(user: String, rating: int)  returns int {
+       set communityData = Helper.addRating(communityData, user, rating);
+       return communityData.averageRating;
+    }
+
+    action _updateCustomData(newCustomData:EventCustomData, newCommunityData: CommunityData) {
+        if (newCustomData != null && newCustomData.poiId != null) {
+            set poi = query POIObject(target.id == newCustomData.poiId);
+        }
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData) ||
+			Helper.requiresUpdateOnEventCustomData(newCustomData, customData)) {
+			callEntityUpdate();
+		}
+
+        set customData = newCustomData;
+        set communityData = newCommunityData;
+    }
+    
+    action initialize() {
+        set poi = query POIObject(target.id == this.data.poiId);
+        callEntityUpdate();
+    }
+
+    action _updateEntity(newId:Long) {
+        set entityId = newId;
+    }
+    action callEntityUpdate() {
+        if(entityId == null || entityId > 0) {
+            if (poi != null && poi.entityId != null && poi.entityId > 0) {
+                invoke updateSemanticData("event",Helper.toSingleton(poi.entityId));
+            } else {
+                invoke updateSemanticData("event", null);
+            }    
+        }
+    }
+    action update(evt: GenericEvent) {
+        newPois : POIObject[] = query POIObject(target.id == evt.poiId);
+        if (newPois != null && count(newPois) > 0) {
+            set poi = newPois[0];
+        }    
+		if (Helper.requiresUpdateOnGenericEvent(evt, data)) {
+			callEntityUpdate();
+		}
+        set data = evt;
+    }
+    action changePOI(newId : String) {
+        set poi = query POIObject(target.id == newId);
+        callEntityUpdate();
+    }
+    
+    action _delete() {
+        if (entityId != null && entityId > 0) {
+            invoke deleteSemanticData();
+        } else {
+            _destroy();
+        } 
+    }
+    action _destroy() {
+        terminate;
+    }
+    
+    action _attend(user: String) {
+       set attending = Helper.addUser(attending, user);
+    }
+    action _notAttend(user: String) {
+       set attending = Helper.removeUser(attending, user);
+    }
+
+    subscribe ServiceEventFactory!updateEvent(id=this.id) => update(event);
+}
+
+DomainObject UserEventFactory {
+
+    @Local(actionName="_create")
+    operation createEvent(creator: String, data: GenericEvent, communityData : CommunityData);
+    
+    action _create(creator: String, data: GenericEvent, communityData: CommunityData)  {
+        create UserEventObject(id: data.id, creator: creator, data: data, communityData: communityData);
+    }
+}
+
+DomainType UserEventObject implements EventObject {
+    public inferred rel poi : POIObject (target.id == this.data.poiId);
+    public immutable var creator : String;
+    public inferred var attendees : int = count(attending);
+    private rel semanticService : SemanticService;
+
+    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
+    operation updateSemanticData(type:String,relations:Long[]);
+    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
+    operation deleteSemanticData();
+
+    @Local(actionName="_update")
+    operation updateEvent(newData: GenericEvent, newCommunityData:CommunityData);
+
+    @Local(actionName="_delete")
+    operation deleteEvent();
+    
+    @Local(actionName="_attend")
+    operation attend(user: String);
+    
+    @Local(actionName="_notAttend")
+    operation notAttend(user: String);
+    
+    @Local(actionName="_rate")
+    operation rate(user: String, rating: int) returns int;
+    @Local(actionName="_updateCommunityData")
+    operation updateCommunityData(newCommunityData: CommunityData);
+
+    action _updateCommunityData(newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+    action _rate(user: String, rating: int) returns int {
+       set communityData = Helper.addRating(communityData, user, rating);
+       return communityData.averageRating;       
+    }
+
+    action initialize() {
+        callEntityUpdate();
+    }
+
+    action _updateEntity(newId:Long) {
+        set entityId = newId;
+    }
+    action callEntityUpdate() {
+        if (entityId == null || entityId > 0) {
+            if (poi != null && poi.entityId != null && poi.entityId > 0) {
+                invoke updateSemanticData("event",Helper.toSingleton(poi.entityId));
+            } else {
+                invoke updateSemanticData("event", null);
+            }    
+        }
+    }
+    
+    action _delete() {
+        if (entityId != null && entityId > 0) {
+            invoke deleteSemanticData();
+        } else {
+            _destroy();
+        } 
+    }
+    action _destroy() {
+        terminate;
+    }
+
+    action _attend(user: String) {
+       set attending = Helper.addUser(attending, user);
+    }
+    action _notAttend(user: String) {
+       set attending = Helper.removeUser(attending, user);
+    }
+    
+    action _update(newData: GenericEvent, newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnGenericEvent(newData, data) ||
+		    Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+	
+        set data = newData;
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+}
+
+DomainType POIObject implements BaseDTObject {
+    public var data : GenericPOI;
+}
+
+DomainType ServicePOIObject implements POIObject {
+    private rel semanticService : SemanticService;
+    public var customData : POICustomData;
+
+    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
+    operation updateSemanticData(type:String,relations:Long[]);
+    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
+    operation deleteSemanticData();
+
+    @Local(actionName="_updateCustomData")
+    operation updateCustomData(newCustomData:POICustomData, newCommunityData: CommunityData);
+
+    @Local(actionName="_rate")
+    operation rate(user: String, rating: int) returns int;
+    @Local(actionName="_updateCommunityData")
+    operation updateCommunityData(newCommunityData: CommunityData);
+
+    action _updateCommunityData(newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+    action _rate(user: String, rating: int) returns int{
+       set communityData = Helper.addRating(communityData, user, rating);
+       return communityData.averageRating;
+    }
+    
+    action _delete() {
+        if (entityId != null && entityId > 0) {
+            invoke deleteSemanticData();
+        } else {
+            _destroy();
+        } 
+    }
+    action _destroy() {
+        terminate;
+    }
+
+    action update(p: GenericPOI) {
+		if (Helper.requiresUpdateOnGenericPOI(p, data)) {
+			callEntityUpdate();
+		}
+        set data = p;
+    }
+
+    action _updateCustomData(newCustomData:POICustomData, newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+        set customData = newCustomData;
+        set communityData = newCommunityData;
+    }
+    
+    action initialize() {
+        callEntityUpdate();
+    }
+
+    action _updateEntity(newId:Long) {
+        set entityId = newId;
+    }
+    action callEntityUpdate() {
+        if(entityId == null || entityId > 0) {
+            invoke updateSemanticData("location", null);
+        }    
+    }
+
+    subscribe ServicePOIFactory!updatePOI(id=this.id) => update(poi);
+}
+
+
+DomainObject UserPOIFactory {
+
+    @Local(actionName="_create")
+    operation createPOI(creator: String, data: GenericPOI, communityData: CommunityData);
+    
+    action _create(creator: String, data: GenericPOI, communityData: CommunityData)  {
+        create UserPOIObject(id: data.id, creator: creator, data: data, communityData: communityData);
+    }
+}
+
+DomainType UserPOIObject implements POIObject {
+    public immutable var creator : String;
+    private rel semanticService : SemanticService;
+
+    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
+    operation updateSemanticData(type:String,relations:Long[]);
+    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
+    operation deleteSemanticData();
+
+    @Local(actionName="_update")
+    operation updatePOI(newData: GenericPOI, newCommunityData: CommunityData);
+
+    @Local(actionName="_delete")
+    operation deletePOI();
+    
+    @Local(actionName="_rate")
+    operation rate(user: String, rating: int) returns int;
+    @Local(actionName="_updateCommunityData")
+    operation updateCommunityData(newCommunityData: CommunityData);
+
+    action _updateCommunityData(newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate();
+		}
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+    action _rate(user: String, rating: int) returns int {
+       set communityData = Helper.addRating(communityData, user, rating);
+       return communityData.averageRating;
+    }
+    
+    action initialize() {
+        callEntityUpdate();
+    }
+
+    action _updateEntity(newId:Long) {
+        set entityId = newId;
+    }
+    action callEntityUpdate() {
+        if(entityId == null || entityId > 0) {
+            invoke updateSemanticData("location", null);
+        }    
+    }
+    
+    action _delete() {
+        if (entityId != null && entityId > 0) {
+            invoke deleteSemanticData();
+        } else {
+            _destroy();
+        } 
+    }
+    action _destroy() {
+        terminate;
+    }
+
+    action _update(newData: GenericPOI, newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData) ||
+		    Helper.requiresUpdateOnGenericPOI(data, newData)) {
+			callEntityUpdate();
+		}
+        set data = newData;
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+}
+
+DomainObject UserPersonalEventFactory {
+
+    @Local(actionName="_personalize")
+    operation personalizeEvent(eventId: String, user: String) returns boolean;
+    
+    action _personalize(eventId: String, user: String) returns boolean {
+        events: EventObject[]  = query EventObject(target.id == eventId);
+        if (events != null && count(events) == 1) {
+            create UserPersonalEvent(user:user, event: events[0]);
+            return true;
+        }
+        return false;
+    }
+}
+
+DomainType UserPersonalEvent {
+    public immutable var user : String;
+    public rel event : EventObject;
+
+    public var data : GenericEvent;
+    
+    @Local(actionName="_delete")
+    operation delete();
+    
+    port cancelled();
+    
+    action initialize() {
+        set data = event.data;
+    }
+    action _delete() {
+        terminate;
+    } 
+    
+    action cancel() {
+        publish cancelled();
+    }
+    action update() {
+        set data = event.data;
+    }
+    
+    subscribe event!VAR_UPDATED(property="data") => update();
+    subscribe event!DELETED() => cancel();
+}
+
+DomainType StoryObject implements BaseDTObject {
+    public var data : GenericStory;
+    public var attending : String[];
+    public inferred var attendees : int = count(attending);
+
+	public immutable var creator : String;
+    private rel semanticService : SemanticService;
+
+	@Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
+    operation updateSemanticData(type:String,relations:Long[]);
+    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
+    operation deleteSemanticData();
+
+    @Local(actionName="_update")
+    operation updateStory(newData: GenericStory, newCommunityData:CommunityData);
+
+    @Local(actionName="_delete")
+    operation deleteStory();
+    
+    @Local(actionName="_attend")
+    operation attend(user: String);
+    
+    @Local(actionName="_notAttend")
+    operation notAttend(user: String);
+    
+    @Local(actionName="_rate")
+    operation rate(user: String, rating: int) returns int;
+    @Local(actionName="_updateCommunityData")
+    operation updateCommunityData(newCommunityData: CommunityData);
+
+    action _updateCommunityData(newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			callEntityUpdate(null);
+		}
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+    action _rate(user: String, rating: int) returns int {
+       set communityData = Helper.addRating(communityData, user, rating);
+       return communityData.averageRating;       
+    }
+
+    action initialize() {
+		pois : Long[] = null;
+		if (data != null && data.steps != null) {
+			for (step in data.steps) {
+				poi: POIObject[] = query POIObject(target.id == step.poiId);
+				if (count(poi) > 0 && poi[0].entityId != null) pois = Helper.mergeLong(pois,poi[0].entityId);
+			}
+		}
+        callEntityUpdate(pois);
+    }
+
+    action _updateEntity(newId:Long) {
+        set entityId = newId;
+    }
+    action callEntityUpdate(pois: Long[]) {
+        if (entityId == null || entityId > 0) {
+            if (pois != null) {
+                invoke updateSemanticData("narrative",pois);
+            } else {
+                invoke updateSemanticData("narrative", null);
+            }    
+        }
+    }
+    
+    action _delete() {
+        if (entityId != null && entityId > 0) {
+            invoke deleteSemanticData();
+        } else {
+            _destroy();
+        } 
+    }
+    action _destroy() {
+        terminate;
+    }
+
+    action _attend(user: String) {
+       set attending = Helper.addUser(attending, user);
+    }
+    action _notAttend(user: String) {
+       set attending = Helper.removeUser(attending, user);
+    }
+    
+    action _update(newData: GenericStory, newCommunityData: CommunityData) {
+		if (Helper.requiresUpdateOnGenericStory(newData, data) ||
+		    Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
+			pois : Long[] = null;
+			if (data != null && data.steps != null) {
+				for (step in data.steps) {
+					poi : POIObject[] = query POIObject(target.id == step.poiId);
+					if (count(poi) > 0 && poi[0].entityId != null) pois = Helper.mergeLong(pois,poi[0].entityId);
+				}
+			}
+			callEntityUpdate(pois);
+		}
+	
+        set data = newData;
+        set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
+    }
+
+}
+
+DomainObject StoryFactory {
+
+    @Local(actionName="_create")
+    operation createStory(creator: String, data: GenericStory, communityData: CommunityData);
+    
+    action _create(creator: String, data: GenericStory, communityData: CommunityData)  {
+        create StoryObject(id: data.id, creator: creator, data: data, communityData: communityData);
+    }
+}
