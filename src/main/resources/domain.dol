@@ -23,6 +23,8 @@ import it.sayservice.platform.compiler.domain.model.annotations.Process;
 import eu.trentorise.smartcampus.domain.semantic.Tag;
 import eu.trentorise.smartcampus.domain.semantic.SemanticService;
 
+import eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents;
+
 DomainType EventService {
     port update(data : GenericEvent[]);
 }
@@ -60,28 +62,41 @@ DomainObject OperaUniService implements POIService {
 
 
 DomainObject ServiceEventFactory {
-    private var events : String[];
+    private var events : CurrentEvents = CurrentEvents.getInstance();
 
-    port updateEvent(id: String, event: GenericEvent); 
+    port updateEvent(id: String, event: GenericEvent);
+    port deleteEvent(id: String);  
         
     action transformEvents(list : GenericEvent[]) {
         for (e in list) {
             found : boolean = false;
             if (events != null) {
-                for (old in events) {
-                    if (old == e.id) {
+            		contained : boolean = CurrentEvents.containsEvent(events, e);
+                    if (contained) {
                         found = true;
                         publish updateEvent(e.id, e);
                         break;
                     }
-                }
             }
             if (!found) {
                 create ServiceEventObject(id:e.id, data:e);
-                set events = Helper.merge(events,e.id);
+                set events = CurrentEvents.addEvent(events, e);
             }
-        }
+		}
+		
+
+		toRemove : String[] = CurrentEvents.findEventsToDelete(events, list);
+		for (id in toRemove) {
+			objs : ServiceEventObject[] = query ServiceEventObject(target.id == id && target.data.fromTime > System.currentTimeMillis());
+			if (objs != null && count(objs) > 0) {
+            	o : ServiceEventObject = objs[0];
+            	set events = CurrentEvents.deleteEvent(events, o.data.source, o.id);
+            	publish deleteEvent(o.id);
+        	}  
+		}
+		
     }
+
 
     subscribe EventService!update() => transformEvents(data);
 }
@@ -231,6 +246,7 @@ DomainType ServiceEventObject implements EventObject {
     }
 
     subscribe ServiceEventFactory!updateEvent(id=this.id) => update(event);
+    subscribe ServiceEventFactory!deleteEvent(id=this.id) => _delete();
 }
 
 DomainObject UserEventFactory {

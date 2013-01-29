@@ -53,7 +53,7 @@ public class StoryObjectDOEngine extends AbstractDOEngineImpl {
 
     private static Map<String,Collection<java.io.Serializable>> extensions = new HashMap<String,Collection<java.io.Serializable>>();
     static {
-        extensions.put("it.sayservice.platform.core.domain.actions.InvokeOperation",decodeExtension("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAIdwQAAAAKc3IAEWphdmEudXRpbC5IYXNoTWFwBQfawcMWYNEDAAJGAApsb2FkRmFjdG9ySQAJdGhyZXNob2xkeHA/QAAAAAAADHcIAAAAEAAAAAN0AAlvcGVyYXRpb250AAZhdHRlbmR0AAphY3Rpb25OYW1ldAAHX2F0dGVuZHQABHR5cGV0AAVMb2NhbHhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAV0AAplbmdpbmVUeXBldAAIYWN0aXZpdGlxAH4ABHQAEmRlbGV0ZVNlbWFudGljRGF0YXQACnByb2Nlc3NLZXl0AAxkZWxldGVlbnRpdHl0AA1wcm9jZXNzRGVmVVJJdABQZXUvdHJlbnRvcmlzZS9zbWFydGNhbXB1cy9kb21haW4vZGlzY292ZXJ0cmVudG8vYWN0aXZpdGkvZGVsZXRlZW50aXR5LmJwbW4yMC54bWxxAH4ACHQAB1Byb2Nlc3N4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAtkZWxldGVTdG9yeXEAfgAGdAAHX2RlbGV0ZXEAfgAIcQB+AAl4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAlub3RBdHRlbmRxAH4ABnQACl9ub3RBdHRlbmRxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAEdAAEcmF0ZXEAfgAGdAAFX3JhdGVxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAEdAATdXBkYXRlQ29tbXVuaXR5RGF0YXEAfgAGdAAUX3VwZGF0ZUNvbW11bml0eURhdGFxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAABXEAfgALdAAIYWN0aXZpdGlxAH4ABHQAEnVwZGF0ZVNlbWFudGljRGF0YXEAfgAOdAAMdXBkYXRlZW50aXR5cQB+ABB0AFBldS90cmVudG9yaXNlL3NtYXJ0Y2FtcHVzL2RvbWFpbi9kaXNjb3ZlcnRyZW50by9hY3Rpdml0aS91cGRhdGVlbnRpdHkuYnBtbjIwLnhtbHEAfgAIcQB+ABJ4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAt1cGRhdGVTdG9yeXEAfgAGdAAHX3VwZGF0ZXEAfgAIcQB+AAl4eA=="));
+        extensions.put("it.sayservice.platform.core.domain.actions.InvokeOperation",decodeExtension("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAIdwQAAAALc3IAEWphdmEudXRpbC5IYXNoTWFwBQfawcMWYNEDAAJGAApsb2FkRmFjdG9ySQAJdGhyZXNob2xkeHA/QAAAAAAADHcIAAAAEAAAAAN0AAlvcGVyYXRpb250AAZhdHRlbmR0AAphY3Rpb25OYW1ldAAHX2F0dGVuZHQABHR5cGV0AAVMb2NhbHhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAV0AAplbmdpbmVUeXBldAAIYWN0aXZpdGlxAH4ABHQAEmRlbGV0ZVNlbWFudGljRGF0YXQACnByb2Nlc3NLZXl0AAxkZWxldGVlbnRpdHl0AA1wcm9jZXNzRGVmVVJJdABQZXUvdHJlbnRvcmlzZS9zbWFydGNhbXB1cy9kb21haW4vZGlzY292ZXJ0cmVudG8vYWN0aXZpdGkvZGVsZXRlZW50aXR5LmJwbW4yMC54bWxxAH4ACHQAB1Byb2Nlc3N4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAtkZWxldGVTdG9yeXEAfgAGdAAHX2RlbGV0ZXEAfgAIcQB+AAl4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAlub3RBdHRlbmRxAH4ABnQACl9ub3RBdHRlbmRxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAEdAAEcmF0ZXEAfgAGdAAFX3JhdGVxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAAA3EAfgAEdAATdXBkYXRlQ29tbXVuaXR5RGF0YXEAfgAGdAAUX3VwZGF0ZUNvbW11bml0eURhdGFxAH4ACHEAfgAJeHNxAH4AAj9AAAAAAAAMdwgAAAAQAAAABXEAfgALdAAIYWN0aXZpdGlxAH4ABHQAEnVwZGF0ZVNlbWFudGljRGF0YXEAfgAOdAAMdXBkYXRlZW50aXR5cQB+ABB0AFBldS90cmVudG9yaXNlL3NtYXJ0Y2FtcHVzL2RvbWFpbi9kaXNjb3ZlcnRyZW50by9hY3Rpdml0aS91cGRhdGVlbnRpdHkuYnBtbjIwLnhtbHEAfgAIcQB+ABJ4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAR0AAt1cGRhdGVTdG9yeXEAfgAGdAAHX3VwZGF0ZXEAfgAIcQB+AAl4eA=="));
     }
 
      public  Collection<java.io.Serializable> getExtensionValues(String property) {
@@ -169,7 +169,7 @@ if ((getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain
 {
 for (eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step:getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain.discovertrento.GenericStory.class,bundleId).getSteps()){
 {
-List<DomainObjectWrapper> poi = _query___query_4(obj, securityToken, bundleId, step);
+List<DomainObjectWrapper> poi = _query___query_5(obj, securityToken, bundleId, step);
 if ((LanguageHelper.count(poi)>0) && (getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId) != null)){
 pois = eu.trentorise.smartcampus.domain.discovertrento.Helper.mergeLong(pois,getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId));
 }
@@ -252,7 +252,7 @@ if ((getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain
 {
 for (eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step:getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain.discovertrento.GenericStory.class,bundleId).getSteps()){
 {
-List<DomainObjectWrapper> poi = _query___query_5(obj, securityToken, bundleId, step);
+List<DomainObjectWrapper> poi = _query___query_6(obj, securityToken, bundleId, step);
 if ((LanguageHelper.count(poi)>0) && (getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId) != null)){
 pois = eu.trentorise.smartcampus.domain.discovertrento.Helper.mergeLong(pois,getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId));
 }
@@ -300,28 +300,6 @@ List<DBObject> queryList = new ArrayList<DBObject>();
     private boolean _matches_semanticService(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId) throws DomainDataHandlerException {
         return true;
     }
-    private List<DomainObjectWrapper> _query___query_4(DomainObjectWrapper obj, String securityToken, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
-        List<DomainObjectWrapper> result = new ArrayList<DomainObjectWrapper>();
-List<DomainObjectWrapper> _final = new ArrayList<DomainObjectWrapper>();
-List<DBObject> queryList = new ArrayList<DBObject>();
-    if (true) {
-        queryList.add(QueryBuilder.start().and("content.id").is(step.getPoiId()).get());
-    }
-	try{
-    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.POIObject",QueryBuilder.start().or(queryList.toArray(new DBObject[]{})).get(), securityToken, bundleId);
-	} catch(Exception e) {
-    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.POIObject", (DBObject)null, securityToken, bundleId);
-    }
-    for(DomainObjectWrapper w : result) {
-        if (_matches___query_4(w, obj, bundleId, step)) {
-            _final.add(w);
-        }
-    }
-    return _final;
-    }
-    private boolean _matches___query_4(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
-        return getDomainObjectHandler().getVar("id",target,java.lang.String.class,bundleId).equals(step.getPoiId());
-    }
     private List<DomainObjectWrapper> _query___query_5(DomainObjectWrapper obj, String securityToken, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
         List<DomainObjectWrapper> result = new ArrayList<DomainObjectWrapper>();
 List<DomainObjectWrapper> _final = new ArrayList<DomainObjectWrapper>();
@@ -342,6 +320,28 @@ List<DBObject> queryList = new ArrayList<DBObject>();
     return _final;
     }
     private boolean _matches___query_5(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
+        return getDomainObjectHandler().getVar("id",target,java.lang.String.class,bundleId).equals(step.getPoiId());
+    }
+    private List<DomainObjectWrapper> _query___query_6(DomainObjectWrapper obj, String securityToken, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
+        List<DomainObjectWrapper> result = new ArrayList<DomainObjectWrapper>();
+List<DomainObjectWrapper> _final = new ArrayList<DomainObjectWrapper>();
+List<DBObject> queryList = new ArrayList<DBObject>();
+    if (true) {
+        queryList.add(QueryBuilder.start().and("content.id").is(step.getPoiId()).get());
+    }
+	try{
+    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.POIObject",QueryBuilder.start().or(queryList.toArray(new DBObject[]{})).get(), securityToken, bundleId);
+	} catch(Exception e) {
+    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.POIObject", (DBObject)null, securityToken, bundleId);
+    }
+    for(DomainObjectWrapper w : result) {
+        if (_matches___query_6(w, obj, bundleId, step)) {
+            _final.add(w);
+        }
+    }
+    return _final;
+    }
+    private boolean _matches___query_6(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step) throws DomainDataHandlerException {
         return getDomainObjectHandler().getVar("id",target,java.lang.String.class,bundleId).equals(step.getPoiId());
     }
     
@@ -382,7 +382,7 @@ if ((getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain
 {
 for (eu.trentorise.smartcampus.domain.discovertrento.GenericStoryStep step:getDomainObjectHandler().getVar("data",obj,eu.trentorise.smartcampus.domain.discovertrento.GenericStory.class,bundleId).getSteps()){
 {
-List<DomainObjectWrapper> poi = _query___query_5(obj, securityToken, bundleId, step);
+List<DomainObjectWrapper> poi = _query___query_6(obj, securityToken, bundleId, step);
 if ((LanguageHelper.count(poi)>0) && (getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId) != null)){
 pois = eu.trentorise.smartcampus.domain.discovertrento.Helper.mergeLong(pois,getDomainObjectHandler().getVar("entityId",poi.get(0),java.lang.Long.class,bundleId));
 }
