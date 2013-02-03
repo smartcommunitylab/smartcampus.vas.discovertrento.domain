@@ -98,7 +98,7 @@ public class CurrentEvents implements Serializable {
 	}
 	
 	public static CurrentEvents deleteEvent(CurrentEvents events, String source, String id) {
-		events.getSourcesIds().get(source).remove(id);
+		if (events.getSourcesIds() !=null && events.getSourcesIds().containsKey(source)) events.getSourcesIds().get(source).remove(id);
 		return events;
 		
 	}
