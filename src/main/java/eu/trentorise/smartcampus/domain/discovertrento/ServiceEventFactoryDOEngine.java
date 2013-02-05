@@ -73,7 +73,7 @@ Tuple body = new Tuple();
  body.put("id",e.getId());
  body.put("event",e);
 getDomainObjectHandler().publishCustomEvent("updateEvent", body, obj, evts, bundleId);}
-break;}
+}
 }
 }
 }
