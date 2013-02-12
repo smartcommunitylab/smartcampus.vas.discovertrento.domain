@@ -132,6 +132,7 @@ public class Helper {
     public static boolean requiresUpdateOnEventCustomData(EventCustomData newData, EventCustomData data) {
     	if (newData != null && data == null ||
     		newData.getFromTime() != null && !newData.getFromTime().equals(data.getFromTime()) ||
+    	    newData.getTiming() != null && !newData.getTiming().equals(data.getTiming()) ||
     		newData.getPoiId() != null && !newData.getPoiId().equals(data.getPoiId())) 
     	{
     		return true;
@@ -144,6 +145,7 @@ public class Helper {
     	} 
     	else if (newData != null && data != null) {
     		if (newData.getFromTime() != null && !newData.getFromTime().equals(data.getFromTime()) ||
+    			newData.getTiming() != null && !newData.getTiming().equals(data.getTiming()) ||	
     			newData.getPoiId() != null && !newData.getPoiId().equals(data.getPoiId())) return true;
     	}
     	return false;
