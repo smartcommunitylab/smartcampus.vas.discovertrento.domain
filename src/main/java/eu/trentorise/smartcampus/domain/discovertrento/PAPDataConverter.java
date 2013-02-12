@@ -76,7 +76,9 @@ public class PAPDataConverter implements DataConverter {
 		ge.setDescription(desc);
 		ge.setSource("PrimiAllaPrima");
 //		ge.setFromTimeString(e.getEventDate());
-		ge.setFromTime(parseDate(e.getEventDate()).getTime());
+		Date d = parseDate(e.getEventDate());
+		ge.setFromTime(d.getTime());
+		ge.setTiming(formatDate(d));
 		String s = e.getTitle()+"; "+e.getLuogo()+"; "+e.getEventDate();
 		ge.setId(encode(s));
 		if (e.hasPoi()) {
@@ -110,6 +112,12 @@ public class PAPDataConverter implements DataConverter {
 		String format = "EEEE dd/MM/yyyy 'ore' HH:mm";
 		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.ITALIAN);
 		return sdf.parse(eventDate);
+	}
+
+	private static String formatDate(Date eventDate) throws ParseException {
+		String format = "HH:mm";
+		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.ITALIAN);
+		return sdf.format(eventDate);
 	}
 	
 	private static String encode(String s) {

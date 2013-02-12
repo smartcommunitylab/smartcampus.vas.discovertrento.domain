@@ -37,6 +37,8 @@ public class GenericEvent implements java.io.Serializable {
 
 	private String customData;
 	
+	private String timing;
+	
 	public GenericEvent() {
 		super();
 	}
@@ -137,6 +139,14 @@ public class GenericEvent implements java.io.Serializable {
 		this.customData = customData;
 	}
 
+	public String getTiming() {
+		return timing;
+	}
+
+	public void setTiming(String timing) {
+		this.timing = timing;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -150,8 +160,8 @@ public class GenericEvent implements java.io.Serializable {
 		result = prime * result
 				+ ((fromTime == null) ? 0 : fromTime.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result + ((poiId == null) ? 0 : poiId.hashCode());
 		result = prime * result + ((source == null) ? 0 : source.hashCode());
+		result = prime * result + ((timing == null) ? 0 : timing.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		result = prime * result + ((toTime == null) ? 0 : toTime.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -192,15 +202,15 @@ public class GenericEvent implements java.io.Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (poiId == null) {
-			if (other.poiId != null)
-				return false;
-		} else if (!poiId.equals(other.poiId))
-			return false;
 		if (source == null) {
 			if (other.source != null)
 				return false;
 		} else if (!source.equals(other.source))
+			return false;
+		if (timing == null) {
+			if (other.timing != null)
+				return false;
+		} else if (!timing.equals(other.timing))
 			return false;
 		if (title == null) {
 			if (other.title != null)
