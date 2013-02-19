@@ -165,6 +165,7 @@ public class GenericEvent implements java.io.Serializable {
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		result = prime * result + ((toTime == null) ? 0 : toTime.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
+		result = prime * result + ((poiId == null) ? 0 : poiId.hashCode());
 		return result;
 	}
 
@@ -226,6 +227,11 @@ public class GenericEvent implements java.io.Serializable {
 			if (other.type != null)
 				return false;
 		} else if (!type.equals(other.type))
+			return false;
+		if (poiId == null) {
+			if (other.poiId != null)
+				return false;
+		} else if (!poiId.equals(other.poiId))
 			return false;
 		return true;
 	}
