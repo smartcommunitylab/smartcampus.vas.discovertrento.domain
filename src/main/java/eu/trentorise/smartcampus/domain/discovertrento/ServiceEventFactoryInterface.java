@@ -85,6 +85,13 @@ public class  ServiceEventFactoryInterface extends DomainTypeInterfaceImpl {
         PortImpl p = null;
         ArgumentDefImpl a = null;
         p = new PortImpl();
+        p.setName("deleteEvent");
+        a = new ArgumentDefImpl();
+        a.setName("id");
+        a.setType(new Type(java.lang.String .class, false));
+        p.addArgument(a);
+        ports.add(p);
+        p = new PortImpl();
         p.setName("updateEvent");
         a = new ArgumentDefImpl();
         a.setName("id");

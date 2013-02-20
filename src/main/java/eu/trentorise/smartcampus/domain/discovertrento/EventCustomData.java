@@ -25,6 +25,7 @@ public class EventCustomData implements Serializable{
 	private Long fromTime;
 	private Long toTime;
 	private String poiId;
+	private String timing;
 	
 	public EventCustomData() {
 		super();
@@ -62,4 +63,11 @@ public class EventCustomData implements Serializable{
 		this.type = type;
 	}
 
+	public String getTiming() {
+		return timing;
+	}
+
+	public void setTiming(String timing) {
+		this.timing = timing;
+	}
 }

@@ -64,7 +64,11 @@ public class OUDataConverter implements DataConverter {
 		ge.setSource("OperaUniversitaria");
 //		ge.setType("university");
 		ge.setPoiData(createPOIData(l));
-		ge.setId(encode(l.getId()));
+		if (ge.getPoiData().getPoiId() == null) {
+			ge.setId(encode(l.getId()));
+		} else {
+			ge.setId(ge.getPoiData().getPoiId());
+		}
 		
 		Map<String,Object> map = new TreeMap<String, Object>();
 		if (l.hasDetailUrl()) map.put("detailUrl", l.getDetailUrl());

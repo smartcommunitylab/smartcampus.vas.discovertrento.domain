@@ -62,11 +62,10 @@ eu.trentorise.smartcampus.domain.discovertrento.GenericEvent[] list = (eu.trento
 for (eu.trentorise.smartcampus.domain.discovertrento.GenericEvent e:list){
 {
 java.lang.Boolean found = false;
-if (getDomainObjectHandler().getVar("events",obj,java.lang.String[].class,bundleId) != null){
+if (getDomainObjectHandler().getVar("events",obj,eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.class,bundleId) != null){
 {
-for (java.lang.String old:getDomainObjectHandler().getVar("events",obj,java.lang.String[].class,bundleId)){
-{
-if (old.equals(e.getId())){
+java.lang.Boolean contained = eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.containsEvent(getDomainObjectHandler().getVar("events",obj,eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.class,bundleId),e);
+if (contained){
 {
 found = true;
 {
@@ -74,8 +73,6 @@ Tuple body = new Tuple();
  body.put("id",e.getId());
  body.put("event",e);
 getDomainObjectHandler().publishCustomEvent("updateEvent", body, obj, evts, bundleId);}
-break;}
-}
 }
 }
 }
@@ -87,7 +84,22 @@ Tuple body = new Tuple();
  body.put("data",e);
  body.put("id",e.getId());
 getDomainObjectHandler().create(null, "eu.trentorise.smartcampus.domain.discovertrento.ServiceEventObject", body, evts, ops, securityToken, bundleId);}
-getDomainObjectHandler().setVar("events", obj, eu.trentorise.smartcampus.domain.discovertrento.Helper.merge(getDomainObjectHandler().getVar("events",obj,java.lang.String[].class,bundleId),e.getId()), evts, bundleId);}
+getDomainObjectHandler().setVar("events", obj, eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.addEvent(getDomainObjectHandler().getVar("events",obj,eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.class,bundleId),e), evts, bundleId);}
+}
+}
+}
+java.lang.String[] toRemove = eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.findEventsToDelete(getDomainObjectHandler().getVar("events",obj,eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.class,bundleId),list);
+for (java.lang.String id:toRemove){
+{
+List<DomainObjectWrapper> objs = _query___query_0(obj, securityToken, bundleId, id);
+if ((objs != null) && (LanguageHelper.count(objs)>0)){
+{
+DomainObjectWrapper o = objs.get(0);
+getDomainObjectHandler().setVar("events", obj, eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.deleteEvent(getDomainObjectHandler().getVar("events",obj,eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.class,bundleId),getDomainObjectHandler().getVar("data",o,eu.trentorise.smartcampus.domain.discovertrento.GenericEvent.class,bundleId).getSource(),getDomainObjectHandler().getVar("id",o,java.lang.String.class,bundleId)), evts, bundleId);{
+Tuple body = new Tuple();
+ body.put("id",getDomainObjectHandler().getVar("id",o,java.lang.String.class,bundleId));
+getDomainObjectHandler().publishCustomEvent("deleteEvent", body, obj, evts, bundleId);}
+}
 }
 }
 }
@@ -99,6 +111,28 @@ return null;
     
     
     
+    private List<DomainObjectWrapper> _query___query_0(DomainObjectWrapper obj, String securityToken, String bundleId, java.lang.String id) throws DomainDataHandlerException {
+        List<DomainObjectWrapper> result = new ArrayList<DomainObjectWrapper>();
+List<DomainObjectWrapper> _final = new ArrayList<DomainObjectWrapper>();
+List<DBObject> queryList = new ArrayList<DBObject>();
+    if (true) {
+        queryList.add(QueryBuilder.start().and("content.id").is(id).and("content.data.fromTime").greaterThan(java.lang.System.currentTimeMillis()).get());
+    }
+	try{
+    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.ServiceEventObject",QueryBuilder.start().or(queryList.toArray(new DBObject[]{})).get(), securityToken, bundleId);
+	} catch(Exception e) {
+    	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.ServiceEventObject", (DBObject)null, securityToken, bundleId);
+    }
+    for(DomainObjectWrapper w : result) {
+        if (_matches___query_0(w, obj, bundleId, id)) {
+            _final.add(w);
+        }
+    }
+    return _final;
+    }
+    private boolean _matches___query_0(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, java.lang.String id) throws DomainDataHandlerException {
+        return (getDomainObjectHandler().getVar("id",target,java.lang.String.class,bundleId).equals(id)) && (getDomainObjectHandler().getVar("data",target,eu.trentorise.smartcampus.domain.discovertrento.GenericEvent.class,bundleId).getFromTime()>java.lang.System.currentTimeMillis());
+    }
     
     public void handleObjectRelUpdate(String rName, DomainObjectWrapper obj, Set<DomainEvent> evts, String bundleId) throws DomainDataHandlerException {
     }
@@ -106,6 +140,7 @@ return null;
     }
 
     public void handleObjectCreate(DomainObjectWrapper obj, Set<DomainEvent> outEvents, Set<EvaluableDomainOperation> ops, String bundleId) throws DomainDataHandlerException {
+            getDomainObjectHandler().setVar("events", obj, eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents.getInstance(), outEvents, bundleId);
         __initialize(new Tuple(), obj, outEvents, ops, obj.getDomainObject().getSecurityToken(),bundleId);
     }
 
