@@ -127,7 +127,7 @@ public class Helper {
     			new HashSet<Tag>() : 
     			new HashSet<Tag>(Arrays.asList(data.getTags())); 
     		
-    	return set1.equals(set2);		
+    	return !set1.equals(set2);		
     }    
     public static boolean requiresUpdateOnEventCustomData(EventCustomData newData, EventCustomData data) {
     	if (newData != null && data == null ||
