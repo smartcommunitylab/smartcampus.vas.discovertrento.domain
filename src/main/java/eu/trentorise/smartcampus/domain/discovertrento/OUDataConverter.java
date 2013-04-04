@@ -62,7 +62,9 @@ public class OUDataConverter implements DataConverter {
 		ge.setTitle(l.getName());
 		ge.setDescription(l.getDescription());
 		ge.setSource("OperaUniversitaria");
-//		ge.setType("university");
+		if (l.hasPoi() && l.getPoi().getTagsCount() > 0) {
+			ge.setType(l.getPoi().getTags(0));
+		}
 		ge.setPoiData(createPOIData(l));
 		if (ge.getPoiData().getPoiId() == null) {
 			ge.setId(encode(l.getId()));
