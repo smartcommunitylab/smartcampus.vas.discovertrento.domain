@@ -25,6 +25,8 @@ import eu.trentorise.smartcampus.domain.semantic.SemanticService;
 
 import eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents;
 
+import java.util.Map;
+
 DomainType EventService {
     port update(data : GenericEvent[]);
 }
@@ -134,6 +136,9 @@ DomainType BaseDTObject {
 
     operation rate(user: String, rating: int) returns int;
     operation updateCommunityData(newCommunityData: CommunityData);
+    
+    operation follow(user: String, topic: String);
+    operation unfollow(user: String);    
 }
 
 DomainType EventObject implements BaseDTObject {
@@ -141,7 +146,7 @@ DomainType EventObject implements BaseDTObject {
     public rel poi : POIObject;
     public var attending : String[];
     public var attendees : int;
-
+    
     operation attend(user: String);
     operation notAttend(user: String);
 }
@@ -161,6 +166,12 @@ DomainType ServiceEventObject implements EventObject {
     
     @Local(actionName="_notAttend")
     operation notAttend(user: String);
+    
+    @Local(actionName="_follow")
+    operation follow(user: String, topic: String);
+    
+    @Local(actionName="_unfollow")
+    operation unfollow(user: String);    
     
     @Local(actionName="_rate")
     operation rate(user: String, rating: int) returns int;
@@ -243,6 +254,13 @@ DomainType ServiceEventObject implements EventObject {
     action _notAttend(user: String) {
        set attending = Helper.removeUser(attending, user);
     }
+    
+    action _follow(user: String, topic: String) {
+       set communityData = Helper.follow(communityData, user, topic);
+    }
+    action _unfollow(user: String) {
+       set communityData = Helper.unfollow(communityData, user);
+    }    
 
     subscribe ServiceEventFactory!updateEvent(id=this.id) => update(event);
     subscribe ServiceEventFactory!deleteEvent(id=this.id) => _delete();
@@ -280,6 +298,12 @@ DomainType UserEventObject implements EventObject {
     
     @Local(actionName="_notAttend")
     operation notAttend(user: String);
+    
+    @Local(actionName="_follow")
+    operation follow(user: String, topic: String);
+    
+    @Local(actionName="_unfollow")
+    operation unfollow(user: String);      
     
     @Local(actionName="_rate")
     operation rate(user: String, rating: int) returns int;
@@ -332,6 +356,13 @@ DomainType UserEventObject implements EventObject {
        set attending = Helper.removeUser(attending, user);
     }
     
+    action _follow(user: String, topic: String) {
+       set communityData = Helper.follow(communityData, user, topic);
+    }
+    action _unfollow(user: String) {
+       set communityData = Helper.unfollow(communityData, user);
+    }        
+    
     action _update(newData: GenericEvent, newCommunityData: CommunityData) {
 		if (Helper.requiresUpdateOnGenericEvent(newData, data) ||
 		    Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
@@ -359,6 +390,12 @@ DomainType ServicePOIObject implements POIObject {
     @Local(actionName="_updateCustomData")
     operation updateCustomData(newCustomData:POICustomData, newCommunityData: CommunityData);
 
+    @Local(actionName="_follow")
+    operation follow(user: String, topic: String);
+    
+    @Local(actionName="_unfollow")
+    operation unfollow(user: String);  
+
     @Local(actionName="_rate")
     operation rate(user: String, rating: int) returns int;
     @Local(actionName="_updateCommunityData")
@@ -370,6 +407,14 @@ DomainType ServicePOIObject implements POIObject {
 		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
+    
+    action _follow(user: String, topic: String) {
+       set communityData = Helper.follow(communityData, user, topic);
+    }
+    action _unfollow(user: String) {
+       set communityData = Helper.unfollow(communityData, user);
+    }      
+    
     action _rate(user: String, rating: int) returns int{
        set communityData = Helper.addRating(communityData, user, rating);
        return communityData.averageRating;
@@ -443,6 +488,12 @@ DomainType UserPOIObject implements POIObject {
     @Local(actionName="_delete")
     operation deletePOI();
     
+    @Local(actionName="_follow")
+    operation follow(user: String, topic: String);
+    
+    @Local(actionName="_unfollow")
+    operation unfollow(user: String);     
+    
     @Local(actionName="_rate")
     operation rate(user: String, rating: int) returns int;
     @Local(actionName="_updateCommunityData")
@@ -482,6 +533,13 @@ DomainType UserPOIObject implements POIObject {
     action _destroy() {
         terminate;
     }
+    
+    action _follow(user: String, topic: String) {
+       set communityData = Helper.follow(communityData, user, topic);
+    }
+    action _unfollow(user: String) {
+       set communityData = Helper.unfollow(communityData, user);
+    }      
 
     action _update(newData: GenericPOI, newCommunityData: CommunityData) {
 		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData) ||
@@ -562,6 +620,12 @@ DomainType StoryObject implements BaseDTObject {
     @Local(actionName="_notAttend")
     operation notAttend(user: String);
     
+    @Local(actionName="_follow")
+    operation follow(user: String, topic: String);
+    
+    @Local(actionName="_unfollow")
+    operation unfollow(user: String);      
+    
     @Local(actionName="_rate")
     operation rate(user: String, rating: int) returns int;
     @Local(actionName="_updateCommunityData")
@@ -619,6 +683,13 @@ DomainType StoryObject implements BaseDTObject {
     action _notAttend(user: String) {
        set attending = Helper.removeUser(attending, user);
     }
+    
+    action _follow(user: String, topic: String) {
+       set communityData = Helper.follow(communityData, user, topic);
+    }
+    action _unfollow(user: String) {
+       set communityData = Helper.unfollow(communityData, user);
+    }      
     
     action _update(newData: GenericStory, newCommunityData: CommunityData) {
 		if (Helper.requiresUpdateOnGenericStory(newData, data) ||

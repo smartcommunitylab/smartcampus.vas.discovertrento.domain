@@ -16,6 +16,7 @@
 package eu.trentorise.smartcampus.domain.discovertrento;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import eu.trentorise.smartcampus.domain.semantic.Tag;
 
@@ -26,6 +27,7 @@ public class CommunityData implements Serializable{
 	private String notes;
 	private int averageRating;
 	private RatingData[] ratings;
+	private Map<String,String> following;
 	
 	public CommunityData() {
 		super();
@@ -59,5 +61,15 @@ public class CommunityData implements Serializable{
 	public void setRatings(RatingData[] ratings) {
 		this.ratings = ratings;
 	}
+
+	public Map<String, String> getFollowing() {
+		return following;
+	}
+
+	public void setFollowing(Map<String, String> following) {
+		this.following = following;
+	}
+
+
 	
 }

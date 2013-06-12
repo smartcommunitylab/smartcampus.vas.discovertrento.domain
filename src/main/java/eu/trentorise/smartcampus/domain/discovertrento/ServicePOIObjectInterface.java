@@ -108,6 +108,19 @@ public class  ServicePOIObjectInterface extends DomainTypeInterfaceImpl {
         operations.add(o);
 
         o = new OperationImpl();
+        o.setName("follow");
+        o.setVisibility(Visibility.PUBLIC);
+        a = new ArgumentDefImpl();
+        a.setName("user");
+        a.setType(new Type(java.lang.String .class, false));
+        o.addArgument(a);
+        a = new ArgumentDefImpl();
+        a.setName("topic");
+        a.setType(new Type(java.lang.String .class, false));
+        o.addArgument(a);
+        operations.add(o);
+
+        o = new OperationImpl();
         o.setName("rate");
         o.setReturn(new Type(java.lang.Integer .class, false));
         o.setVisibility(Visibility.PUBLIC);
@@ -118,6 +131,15 @@ public class  ServicePOIObjectInterface extends DomainTypeInterfaceImpl {
         a = new ArgumentDefImpl();
         a.setName("rating");
         a.setType(new Type(java.lang.Integer .class, false));
+        o.addArgument(a);
+        operations.add(o);
+
+        o = new OperationImpl();
+        o.setName("unfollow");
+        o.setVisibility(Visibility.PUBLIC);
+        a = new ArgumentDefImpl();
+        a.setName("user");
+        a.setType(new Type(java.lang.String .class, false));
         o.addArgument(a);
         operations.add(o);
 

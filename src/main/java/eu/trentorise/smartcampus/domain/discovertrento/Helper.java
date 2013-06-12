@@ -19,7 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import eu.trentorise.smartcampus.domain.semantic.Tag;
 
@@ -196,5 +198,15 @@ public class Helper {
     	attending = removeUser(attending, "xx");
     	System.err.println(Arrays.toString(attending));
 	}
-    
+	
+	public static CommunityData follow(CommunityData data, String user, String topic) {
+		data.getFollowing().put(user, topic);
+		return data;
+	}
+	
+	public static CommunityData unfollow(CommunityData data, String user) {
+		data.getFollowing().remove(user);
+		return data;
+	}		
+	
 }

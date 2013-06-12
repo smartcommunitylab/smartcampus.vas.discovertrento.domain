@@ -37,7 +37,9 @@ public class ServicePOIObjectDOEngine extends AbstractDOEngineImpl {
             "_process_onRelatedDelete_semanticService",
             "_delete",
             "_destroy",
+            "_follow",
             "_rate",
+            "_unfollow",
             "_updateCommunityData",
             "_updateCustomData",
             "_updateEntity",
@@ -52,7 +54,7 @@ public class ServicePOIObjectDOEngine extends AbstractDOEngineImpl {
 
     private static Map<String,Collection<java.io.Serializable>> extensions = new HashMap<String,Collection<java.io.Serializable>>();
     static {
-        extensions.put("it.sayservice.platform.core.domain.actions.InvokeOperation",decodeExtension("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAFdwQAAAAHc3IAEWphdmEudXRpbC5IYXNoTWFwBQfawcMWYNEDAAJGAApsb2FkRmFjdG9ySQAJdGhyZXNob2xkeHA/QAAAAAAADHcIAAAAEAAAAAV0AAplbmdpbmVUeXBldAAIYWN0aXZpdGl0AAlvcGVyYXRpb250ABJkZWxldGVTZW1hbnRpY0RhdGF0AApwcm9jZXNzS2V5dAAMZGVsZXRlZW50aXR5dAANcHJvY2Vzc0RlZlVSSXQAUGV1L3RyZW50b3Jpc2Uvc21hcnRjYW1wdXMvZG9tYWluL2Rpc2NvdmVydHJlbnRvL2FjdGl2aXRpL2RlbGV0ZWVudGl0eS5icG1uMjAueG1sdAAEdHlwZXQAB1Byb2Nlc3N4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAZ0AARyYXRldAAKYWN0aW9uTmFtZXQABV9yYXRlcQB+AAx0AAVMb2NhbHhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABnQAE3VwZGF0ZUNvbW11bml0eURhdGFxAH4AEHQAFF91cGRhdGVDb21tdW5pdHlEYXRhcQB+AAxxAH4AEnhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABnQAEHVwZGF0ZUN1c3RvbURhdGFxAH4AEHQAEV91cGRhdGVDdXN0b21EYXRhcQB+AAxxAH4AEnhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAVxAH4ABHQACGFjdGl2aXRpcQB+AAZ0ABJ1cGRhdGVTZW1hbnRpY0RhdGFxAH4ACHQADHVwZGF0ZWVudGl0eXEAfgAKdABQZXUvdHJlbnRvcmlzZS9zbWFydGNhbXB1cy9kb21haW4vZGlzY292ZXJ0cmVudG8vYWN0aXZpdGkvdXBkYXRlZW50aXR5LmJwbW4yMC54bWxxAH4ADHEAfgANeHg="));
+        extensions.put("it.sayservice.platform.core.domain.actions.InvokeOperation",decodeExtension("rO0ABXNyABNqYXZhLnV0aWwuQXJyYXlMaXN0eIHSHZnHYZ0DAAFJAARzaXpleHAAAAAHdwQAAAAKc3IAEWphdmEudXRpbC5IYXNoTWFwBQfawcMWYNEDAAJGAApsb2FkRmFjdG9ySQAJdGhyZXNob2xkeHA/QAAAAAAADHcIAAAAEAAAAAV0AAplbmdpbmVUeXBldAAIYWN0aXZpdGl0AAlvcGVyYXRpb250ABJkZWxldGVTZW1hbnRpY0RhdGF0AApwcm9jZXNzS2V5dAAMZGVsZXRlZW50aXR5dAANcHJvY2Vzc0RlZlVSSXQAUGV1L3RyZW50b3Jpc2Uvc21hcnRjYW1wdXMvZG9tYWluL2Rpc2NvdmVydHJlbnRvL2FjdGl2aXRpL2RlbGV0ZWVudGl0eS5icG1uMjAueG1sdAAEdHlwZXQAB1Byb2Nlc3N4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAZ0AAZmb2xsb3d0AAphY3Rpb25OYW1ldAAHX2ZvbGxvd3EAfgAMdAAFTG9jYWx4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAZ0AARyYXRlcQB+ABB0AAVfcmF0ZXEAfgAMcQB+ABJ4c3EAfgACP0AAAAAAAAx3CAAAABAAAAADcQB+AAZ0AAh1bmZvbGxvd3EAfgAQdAAJX3VuZm9sbG93cQB+AAxxAH4AEnhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABnQAE3VwZGF0ZUNvbW11bml0eURhdGFxAH4AEHQAFF91cGRhdGVDb21tdW5pdHlEYXRhcQB+AAxxAH4AEnhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAANxAH4ABnQAEHVwZGF0ZUN1c3RvbURhdGFxAH4AEHQAEV91cGRhdGVDdXN0b21EYXRhcQB+AAxxAH4AEnhzcQB+AAI/QAAAAAAADHcIAAAAEAAAAAVxAH4ABHQACGFjdGl2aXRpcQB+AAZ0ABJ1cGRhdGVTZW1hbnRpY0RhdGFxAH4ACHQADHVwZGF0ZWVudGl0eXEAfgAKdABQZXUvdHJlbnRvcmlzZS9zbWFydGNhbXB1cy9kb21haW4vZGlzY292ZXJ0cmVudG8vYWN0aXZpdGkvdXBkYXRlZW50aXR5LmJwbW4yMC54bWxxAH4ADHEAfgANeHg="));
     }
 
      public  Collection<java.io.Serializable> getExtensionValues(String property) {
@@ -72,8 +74,14 @@ public class ServicePOIObjectDOEngine extends AbstractDOEngineImpl {
         if ("_destroy".equals(actionName)) {
             return _destroy(t, obj, outEvents, ops, securityToken, bundleId);
         }
+        if ("_follow".equals(actionName)) {
+            return _follow(t, obj, outEvents, ops, securityToken, bundleId);
+        }
         if ("_rate".equals(actionName)) {
             return _rate(t, obj, outEvents, ops, securityToken, bundleId);
+        }
+        if ("_unfollow".equals(actionName)) {
+            return _unfollow(t, obj, outEvents, ops, securityToken, bundleId);
         }
         if ("_updateCommunityData".equals(actionName)) {
             return _updateCommunityData(t, obj, outEvents, ops, securityToken, bundleId);
@@ -125,6 +133,16 @@ return null;
 }
 
     }
+    private Object _follow(Tuple tuple, DomainObjectWrapper obj, Set<DomainEvent> evts, Set<EvaluableDomainOperation> ops, String securityToken, String bundleId) throws DomainDataHandlerException {
+        {
+java.lang.String user = (java.lang.String) tuple.get("user");
+java.lang.String topic = (java.lang.String) tuple.get("topic");
+{
+getDomainObjectHandler().setVar("communityData", obj, eu.trentorise.smartcampus.domain.discovertrento.Helper.follow(getDomainObjectHandler().getVar("communityData",obj,eu.trentorise.smartcampus.domain.discovertrento.CommunityData.class,bundleId),user,topic), evts, bundleId);}
+return null;
+}
+
+    }
     private Object _rate(Tuple tuple, DomainObjectWrapper obj, Set<DomainEvent> evts, Set<EvaluableDomainOperation> ops, String securityToken, String bundleId) throws DomainDataHandlerException {
         {
 java.lang.String user = (java.lang.String) tuple.get("user");
@@ -132,6 +150,15 @@ java.lang.Integer rating = (java.lang.Integer) tuple.get("rating");
 {
 getDomainObjectHandler().setVar("communityData", obj, eu.trentorise.smartcampus.domain.discovertrento.Helper.addRating(getDomainObjectHandler().getVar("communityData",obj,eu.trentorise.smartcampus.domain.discovertrento.CommunityData.class,bundleId),user,rating), evts, bundleId);return getDomainObjectHandler().getVar("communityData",obj,eu.trentorise.smartcampus.domain.discovertrento.CommunityData.class,bundleId).getAverageRating();
 }
+}
+
+    }
+    private Object _unfollow(Tuple tuple, DomainObjectWrapper obj, Set<DomainEvent> evts, Set<EvaluableDomainOperation> ops, String securityToken, String bundleId) throws DomainDataHandlerException {
+        {
+java.lang.String user = (java.lang.String) tuple.get("user");
+{
+getDomainObjectHandler().setVar("communityData", obj, eu.trentorise.smartcampus.domain.discovertrento.Helper.unfollow(getDomainObjectHandler().getVar("communityData",obj,eu.trentorise.smartcampus.domain.discovertrento.CommunityData.class,bundleId),user), evts, bundleId);}
+return null;
 }
 
     }
