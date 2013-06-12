@@ -16,6 +16,7 @@
 package eu.trentorise.smartcampus.domain.discovertrento;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import eu.trentorise.smartcampus.domain.semantic.Tag;
@@ -63,6 +64,7 @@ public class CommunityData implements Serializable{
 	}
 
 	public Map<String, String> getFollowing() {
+		if (following == null) following = new HashMap<String, String>();
 		return following;
 	}
 
