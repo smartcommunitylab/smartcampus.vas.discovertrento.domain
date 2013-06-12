@@ -200,13 +200,20 @@ public class Helper {
 	}
 	
 	public static CommunityData follow(CommunityData data, String user, String topic) {
-		data.getFollowing().put(user, topic);
-		return data;
+    	CommunityData res = data;
+    	if (res == null) {
+    		res = new CommunityData();
+    	}
+		res.getFollowing().put(user, topic);
+		return res;
 	}
 	
 	public static CommunityData unfollow(CommunityData data, String user) {
-		data.getFollowing().remove(user);
-		return data;
+    	CommunityData res = data;
+    	if (res != null) {
+    		res.getFollowing().remove(user);
+    	}
+		return res;
 	}		
 	
 }
