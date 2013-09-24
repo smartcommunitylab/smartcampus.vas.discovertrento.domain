@@ -61,7 +61,7 @@ public class UserPersonalEventFactoryDOEngine extends AbstractDOEngineImpl {
 java.lang.String eventId = (java.lang.String) tuple.get("eventId");
 java.lang.String user = (java.lang.String) tuple.get("user");
 {
-List<DomainObjectWrapper> events = _query___query_7(obj, securityToken, bundleId, eventId);
+List<DomainObjectWrapper> events = _query___query_5(obj, securityToken, bundleId, eventId);
 if ((events != null) && (LanguageHelper.count(events).equals(1))){
 {
 {
@@ -80,7 +80,7 @@ return false;
     
     
     
-    private List<DomainObjectWrapper> _query___query_7(DomainObjectWrapper obj, String securityToken, String bundleId, java.lang.String eventId) throws DomainDataHandlerException {
+    private List<DomainObjectWrapper> _query___query_5(DomainObjectWrapper obj, String securityToken, String bundleId, java.lang.String eventId) throws DomainDataHandlerException {
         List<DomainObjectWrapper> result = new ArrayList<DomainObjectWrapper>();
 List<DomainObjectWrapper> _final = new ArrayList<DomainObjectWrapper>();
 List<DBObject> queryList = new ArrayList<DBObject>();
@@ -93,13 +93,13 @@ List<DBObject> queryList = new ArrayList<DBObject>();
     	result = getDomainObjectHandler().query("eu.trentorise.smartcampus.domain.discovertrento.EventObject", (DBObject)null, securityToken, bundleId);
     }
     for(DomainObjectWrapper w : result) {
-        if (_matches___query_7(w, obj, bundleId, eventId)) {
+        if (_matches___query_5(w, obj, bundleId, eventId)) {
             _final.add(w);
         }
     }
     return _final;
     }
-    private boolean _matches___query_7(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, java.lang.String eventId) throws DomainDataHandlerException {
+    private boolean _matches___query_5(DomainObjectWrapper target, DomainObjectWrapper obj, String bundleId, java.lang.String eventId) throws DomainDataHandlerException {
         return getDomainObjectHandler().getVar("id",target,java.lang.String.class,bundleId).equals(eventId);
     }
     

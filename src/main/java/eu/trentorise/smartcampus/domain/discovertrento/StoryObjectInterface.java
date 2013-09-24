@@ -122,11 +122,6 @@ public class  StoryObjectInterface extends DomainTypeInterfaceImpl {
         operations.add(o);
 
         o = new OperationImpl();
-        o.setName("deleteSemanticData");
-        o.setVisibility(Visibility.PUBLIC);
-        operations.add(o);
-
-        o = new OperationImpl();
         o.setName("deleteStory");
         o.setVisibility(Visibility.PUBLIC);
         operations.add(o);
@@ -182,19 +177,6 @@ public class  StoryObjectInterface extends DomainTypeInterfaceImpl {
         a = new ArgumentDefImpl();
         a.setName("newCommunityData");
         a.setType(new Type(eu.trentorise.smartcampus.domain.discovertrento.CommunityData .class, false));
-        o.addArgument(a);
-        operations.add(o);
-
-        o = new OperationImpl();
-        o.setName("updateSemanticData");
-        o.setVisibility(Visibility.PUBLIC);
-        a = new ArgumentDefImpl();
-        a.setName("type");
-        a.setType(new Type(java.lang.String .class, false));
-        o.addArgument(a);
-        a = new ArgumentDefImpl();
-        a.setName("relations");
-        a.setType(new Type(java.lang.Long .class, true));
         o.addArgument(a);
         operations.add(o);
 

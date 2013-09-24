@@ -20,9 +20,6 @@ import it.sayservice.platform.compiler.domain.model.annotations.Subscription;
 import it.sayservice.platform.compiler.domain.model.annotations.Local;
 import it.sayservice.platform.compiler.domain.model.annotations.Process;
 
-import eu.trentorise.smartcampus.domain.semantic.Tag;
-import eu.trentorise.smartcampus.domain.semantic.SemanticService;
-
 import eu.trentorise.smartcampus.domain.discovertrento.CurrentEvents;
 
 import java.util.Map;
@@ -153,13 +150,7 @@ DomainType EventObject implements BaseDTObject {
 
 DomainType ServiceEventObject implements EventObject {
     public inferred var attendees : int = count(attending);
-    private rel semanticService : SemanticService;
     public var customData: EventCustomData;
-
-    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
-    operation updateSemanticData(type:String,relations:Long[]);
-    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
-    operation deleteSemanticData();
 
     @Local(actionName="_attend")
     operation attend(user: String);
@@ -182,9 +173,6 @@ DomainType ServiceEventObject implements EventObject {
     operation updateCustomData(newCustomData:EventCustomData, newCommunityData: CommunityData);
 
     action _updateCommunityData(newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
-		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
     action _rate(user: String, rating: int)  returns int {
@@ -196,10 +184,6 @@ DomainType ServiceEventObject implements EventObject {
         if (newCustomData != null && newCustomData.poiId != null) {
             set poi = query POIObject(target.id == newCustomData.poiId);
         }
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData) ||
-			Helper.requiresUpdateOnEventCustomData(newCustomData, customData)) {
-			callEntityUpdate();
-		}
 
         set customData = newCustomData;
         set communityData = newCommunityData;
@@ -207,44 +191,20 @@ DomainType ServiceEventObject implements EventObject {
     
     action initialize() {
         set poi = query POIObject(target.id == this.data.poiId);
-        callEntityUpdate();
     }
 
-    action _updateEntity(newId:Long) {
-        set entityId = newId;
-    }
-    action callEntityUpdate() {
-        if(entityId == null || entityId > 0) {
-            if (poi != null && poi.entityId != null && poi.entityId > 0) {
-                invoke updateSemanticData("event",Helper.toSingleton(poi.entityId));
-            } else {
-                invoke updateSemanticData("event", null);
-            }    
-        }
-    }
     action update(evt: GenericEvent) {
         newPois : POIObject[] = query POIObject(target.id == evt.poiId);
         if (newPois != null && count(newPois) > 0) {
             set poi = newPois[0];
         }    
-		if (Helper.requiresUpdateOnGenericEvent(evt, data)) {
-			callEntityUpdate();
-		}
         set data = evt;
     }
     action changePOI(newId : String) {
         set poi = query POIObject(target.id == newId);
-        callEntityUpdate();
     }
     
     action _delete() {
-        if (entityId != null && entityId > 0) {
-            invoke deleteSemanticData();
-        } else {
-            _destroy();
-        } 
-    }
-    action _destroy() {
         terminate;
     }
     
@@ -280,12 +240,6 @@ DomainType UserEventObject implements EventObject {
     public inferred rel poi : POIObject (target.id == this.data.poiId);
     public immutable var creator : String;
     public inferred var attendees : int = count(attending);
-    private rel semanticService : SemanticService;
-
-    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
-    operation updateSemanticData(type:String,relations:Long[]);
-    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
-    operation deleteSemanticData();
 
     @Local(actionName="_update")
     operation updateEvent(newData: GenericEvent, newCommunityData:CommunityData);
@@ -311,9 +265,6 @@ DomainType UserEventObject implements EventObject {
     operation updateCommunityData(newCommunityData: CommunityData);
 
     action _updateCommunityData(newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
-		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
     action _rate(user: String, rating: int) returns int {
@@ -321,31 +272,7 @@ DomainType UserEventObject implements EventObject {
        return communityData.averageRating;       
     }
 
-    action initialize() {
-        callEntityUpdate();
-    }
-
-    action _updateEntity(newId:Long) {
-        set entityId = newId;
-    }
-    action callEntityUpdate() {
-        if (entityId == null || entityId > 0) {
-            if (poi != null && poi.entityId != null && poi.entityId > 0) {
-                invoke updateSemanticData("event",Helper.toSingleton(poi.entityId));
-            } else {
-                invoke updateSemanticData("event", null);
-            }    
-        }
-    }
-    
     action _delete() {
-        if (entityId != null && entityId > 0) {
-            invoke deleteSemanticData();
-        } else {
-            _destroy();
-        } 
-    }
-    action _destroy() {
         terminate;
     }
 
@@ -366,7 +293,6 @@ DomainType UserEventObject implements EventObject {
     action _update(newData: GenericEvent, newCommunityData: CommunityData) {
 		if (Helper.requiresUpdateOnGenericEvent(newData, data) ||
 		    Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
 		}
 	
         set data = newData;
@@ -379,13 +305,7 @@ DomainType POIObject implements BaseDTObject {
 }
 
 DomainType ServicePOIObject implements POIObject {
-    private rel semanticService : SemanticService;
     public var customData : POICustomData;
-
-    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
-    operation updateSemanticData(type:String,relations:Long[]);
-    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
-    operation deleteSemanticData();
 
     @Local(actionName="_updateCustomData")
     operation updateCustomData(newCustomData:POICustomData, newCommunityData: CommunityData);
@@ -402,9 +322,6 @@ DomainType ServicePOIObject implements POIObject {
     operation updateCommunityData(newCommunityData: CommunityData);
 
     action _updateCommunityData(newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
-		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
     
@@ -421,44 +338,18 @@ DomainType ServicePOIObject implements POIObject {
     }
     
     action _delete() {
-        if (entityId != null && entityId > 0) {
-            invoke deleteSemanticData();
-        } else {
-            _destroy();
-        } 
-    }
-    action _destroy() {
         terminate;
     }
 
     action update(p: GenericPOI) {
-		if (Helper.requiresUpdateOnGenericPOI(p, data)) {
-			callEntityUpdate();
-		}
         set data = p;
     }
 
     action _updateCustomData(newCustomData:POICustomData, newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
-		}
         set customData = newCustomData;
         set communityData = newCommunityData;
     }
     
-    action initialize() {
-        callEntityUpdate();
-    }
-
-    action _updateEntity(newId:Long) {
-        set entityId = newId;
-    }
-    action callEntityUpdate() {
-        if(entityId == null || entityId > 0) {
-            invoke updateSemanticData("location", null);
-        }    
-    }
-
     subscribe ServicePOIFactory!updatePOI(id=this.id) => update(poi);
 }
 
@@ -475,12 +366,6 @@ DomainObject UserPOIFactory {
 
 DomainType UserPOIObject implements POIObject {
     public immutable var creator : String;
-    private rel semanticService : SemanticService;
-
-    @Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
-    operation updateSemanticData(type:String,relations:Long[]);
-    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
-    operation deleteSemanticData();
 
     @Local(actionName="_update")
     operation updatePOI(newData: GenericPOI, newCommunityData: CommunityData);
@@ -500,9 +385,6 @@ DomainType UserPOIObject implements POIObject {
     operation updateCommunityData(newCommunityData: CommunityData);
 
     action _updateCommunityData(newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate();
-		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
     action _rate(user: String, rating: int) returns int {
@@ -510,27 +392,7 @@ DomainType UserPOIObject implements POIObject {
        return communityData.averageRating;
     }
     
-    action initialize() {
-        callEntityUpdate();
-    }
-
-    action _updateEntity(newId:Long) {
-        set entityId = newId;
-    }
-    action callEntityUpdate() {
-        if(entityId == null || entityId > 0) {
-            invoke updateSemanticData("location", null);
-        }    
-    }
-    
     action _delete() {
-        if (entityId != null && entityId > 0) {
-            invoke deleteSemanticData();
-        } else {
-            _destroy();
-        } 
-    }
-    action _destroy() {
         terminate;
     }
     
@@ -544,7 +406,6 @@ DomainType UserPOIObject implements POIObject {
     action _update(newData: GenericPOI, newCommunityData: CommunityData) {
 		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData) ||
 		    Helper.requiresUpdateOnGenericPOI(data, newData)) {
-			callEntityUpdate();
 		}
         set data = newData;
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
@@ -601,12 +462,6 @@ DomainType StoryObject implements BaseDTObject {
     public inferred var attendees : int = count(attending);
 
 	public immutable var creator : String;
-    private rel semanticService : SemanticService;
-
-	@Process(engineType="activiti", processKey="updateentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/updateentity.bpmn20.xml")
-    operation updateSemanticData(type:String,relations:Long[]);
-    @Process(engineType="activiti", processKey="deleteentity", processDefURI="eu/trentorise/smartcampus/domain/discovertrento/activiti/deleteentity.bpmn20.xml")
-    operation deleteSemanticData();
 
     @Local(actionName="_update")
     operation updateStory(newData: GenericStory, newCommunityData:CommunityData);
@@ -632,9 +487,6 @@ DomainType StoryObject implements BaseDTObject {
     operation updateCommunityData(newCommunityData: CommunityData);
 
     action _updateCommunityData(newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			callEntityUpdate(null);
-		}
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
     action _rate(user: String, rating: int) returns int {
@@ -642,38 +494,7 @@ DomainType StoryObject implements BaseDTObject {
        return communityData.averageRating;       
     }
 
-    action initialize() {
-		pois : Long[] = null;
-		if (data != null && data.steps != null) {
-			for (step in data.steps) {
-				poi: POIObject[] = query POIObject(target.id == step.poiId);
-				if (count(poi) > 0 && poi[0].entityId != null) pois = Helper.mergeLong(pois,poi[0].entityId);
-			}
-		}
-        callEntityUpdate(pois);
-    }
-
-    action _updateEntity(newId:Long) {
-        set entityId = newId;
-    }
-    action callEntityUpdate(pois: Long[]) {
-        if (entityId == null || entityId > 0) {
-            if (pois != null) {
-                invoke updateSemanticData("narrative",pois);
-            } else {
-                invoke updateSemanticData("narrative", null);
-            }    
-        }
-    }
-    
     action _delete() {
-        if (entityId != null && entityId > 0) {
-            invoke deleteSemanticData();
-        } else {
-            _destroy();
-        } 
-    }
-    action _destroy() {
         terminate;
     }
 
@@ -692,18 +513,6 @@ DomainType StoryObject implements BaseDTObject {
     }      
     
     action _update(newData: GenericStory, newCommunityData: CommunityData) {
-		if (Helper.requiresUpdateOnGenericStory(newData, data) ||
-		    Helper.requiresUpdateOnCommunityData(newCommunityData, communityData)) {
-			pois : Long[] = null;
-			if (data != null && data.steps != null) {
-				for (step in data.steps) {
-					poi : POIObject[] = query POIObject(target.id == step.poiId);
-					if (count(poi) > 0 && poi[0].entityId != null) pois = Helper.mergeLong(pois,poi[0].entityId);
-				}
-			}
-			callEntityUpdate(pois);
-		}
-	
         set data = newData;
         set communityData = Helper.mergeCommunityData(communityData, newCommunityData);
     }
